@@ -7,11 +7,13 @@
 ░░░░░ ░░░ ░░░░░  ░░░░░░  ░░░░░ ░░░░░ 
 ```
 
-**mox** is a mocking tool.
+**mox** is a tool to stub external dependencies.
 
 # About
 
 It is written in Go with mappings defined in JSON.
+
+Try it together with [bro](https://github.com/lameaux/bro) - a load testing tool.
 
 # Installation
 
