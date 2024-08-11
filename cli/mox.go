@@ -4,13 +4,16 @@ import (
 	"context"
 	"flag"
 	"fmt"
-	"github.com/lameaux/mox/internal/app"
+	"github.com/lameaux/mox/internal/admin"
 	"github.com/lameaux/mox/internal/metrics"
+	"github.com/lameaux/mox/internal/mock"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
+	"net/http"
 	"os"
 	"os/signal"
 	"syscall"
+	"time"
 )
 
 const (
@@ -31,9 +34,9 @@ var GitHash string
 func main() {
 	var debug = flag.Bool("debug", false, "enable debug mode")
 	var skipBanner = flag.Bool("skipBanner", false, "skip banner")
-	var port = flag.String("port", "8080", "port for server")
-	var adminPort = flag.String("adminPort", "8081", "port for admin")
-	var metricsPort = flag.String("metricsPort", "9090", "port for metrics")
+	var mockPort = flag.String("port", "8080", "port for mock server")
+	var adminPort = flag.String("adminPort", "8081", "port for admin server")
+	var metricsPort = flag.String("metricsPort", "9090", "port for metrics server")
 
 	flag.Parse()
 
@@ -52,24 +55,34 @@ func main() {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
-	server := metrics.StartServer(*metricsPort)
-	defer metrics.StopServer(ctx, server)
+	metricsServer := metrics.StartServer(*metricsPort)
+	adminServer := admin.StartServer(*adminPort)
+	mockServer := mock.StartServer(*mockPort)
 
 	handleSignals(func() {
-		metrics.StopServer(ctx, server)
+		stopServer(ctx, mockServer)
+		stopServer(ctx, adminServer)
+		stopServer(ctx, metricsServer)
 		cancel()
 	})
-
-	app.Run(ctx, *port, *adminPort)
 }
 
 func handleSignals(shutdownFn func()) {
 	sigCh := make(chan os.Signal, 1)
 	signal.Notify(sigCh, os.Interrupt, syscall.SIGTERM)
 
-	go func() {
-		sig := <-sigCh
-		log.Info().Str("signal", sig.String()).Msgf("received signal")
-		shutdownFn()
-	}()
+	sig := <-sigCh
+	log.Info().Str("signal", sig.String()).Msgf("received signal")
+	shutdownFn()
+}
+
+func stopServer(ctx context.Context, server *http.Server) {
+	timedOutCtx, cancel := context.WithTimeout(ctx, 5*time.Second)
+	defer cancel()
+
+	if err := server.Shutdown(timedOutCtx); err != nil {
+		log.Error().Str("addr", server.Addr).Err(err).Msg("failed to shutdown server")
+	}
+
+	log.Debug().Str("addr", server.Addr).Msg("server stopped")
 }
