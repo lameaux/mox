@@ -32,7 +32,7 @@ func (m *Mapping) matches(r *http.Request) bool {
 		return false
 	}
 
-	if m.Request.Method != r.Method {
+	if !strings.EqualFold(m.Request.Method, r.Method) {
 		return false
 	}
 
