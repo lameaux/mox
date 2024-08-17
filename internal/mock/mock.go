@@ -5,22 +5,10 @@ import (
 	"net/http"
 )
 
-func handler() http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		if r.URL.Path != "/static" {
-			http.NotFound(w, r)
-			return
-		}
-
-		w.WriteHeader(http.StatusOK)
-		_, _ = w.Write([]byte("OK"))
-	}
-}
-
-func StartServer(port string) *http.Server {
+func StartServer(port string, handler http.HandlerFunc) *http.Server {
 	server := &http.Server{
 		Addr:    ":" + port,
-		Handler: handler(),
+		Handler: handler,
 	}
 
 	go func() {

@@ -37,6 +37,7 @@ func main() {
 	var mockPort = flag.String("port", "8080", "port for mock server")
 	var adminPort = flag.String("adminPort", "8081", "port for admin server")
 	var metricsPort = flag.String("metricsPort", "9090", "port for metrics server")
+	var mappingsPath = flag.String("mappingsPath", "./mappings", "path to mappings")
 
 	flag.Parse()
 
@@ -57,7 +58,13 @@ func main() {
 
 	metricsServer := metrics.StartServer(*metricsPort)
 	adminServer := admin.StartServer(*adminPort)
-	mockServer := mock.StartServer(*mockPort)
+
+	h, err := mock.NewHandler(*mappingsPath)
+	if err != nil {
+		log.Fatal().Err(err).Msg("failed to initialize mock handler")
+	}
+
+	mockServer := mock.StartServer(*mockPort, h)
 
 	handleSignals(func() {
 		stopServer(ctx, mockServer)

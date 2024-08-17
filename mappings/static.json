@@ -5,6 +5,8 @@
   },
   "response": {
     "status": 200,
-    "jsonBody": {}
+    "jsonBody": {
+      "msg": "OK"
+    }
   }
 }
