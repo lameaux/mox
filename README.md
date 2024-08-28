@@ -38,6 +38,7 @@ mox [flags]
 --port=8080
 --adminPort=8081
 --metricsPort=9090
+--configPath=./config
 ```
 
 ## Flags
@@ -67,3 +68,7 @@ Defines a port for admin API
 ### --metricsPort
 
 Defines a port for metrics endpoint
+
+### --configPath=./config
+
+Path to config location with mappings, files and templates
