@@ -1,0 +1,10 @@
+{
+  "request": {
+    "method": "GET",
+    "url": "/plain"
+  },
+  "response": {
+    "status": 200,
+    "body": "This plain text is coming from 'body' attribute"
+  }
+}

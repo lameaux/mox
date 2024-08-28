@@ -1,0 +1,10 @@
+{
+  "request": {
+    "method": "GET",
+    "url": "/plain.txt"
+  },
+  "response": {
+    "status": 200,
+    "file": "plain.txt"
+  }
+}

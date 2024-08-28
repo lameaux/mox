@@ -32,9 +32,38 @@ make install
 ```shell
 mox [flags]
 
---debug
+--debug 
+--accessLog
 --skipBanner
 --port=8080
 --adminPort=8081
 --metricsPort=9090
 ```
+
+## Flags
+
+### --debug
+
+Enables debug mode. Results in more detailed logging.
+
+### --accessLog
+
+Requires debug mode (`--debug`).
+
+For all incoming requests, it logs whether they matched any mapping.
+
+### --skipBanner
+
+Skips printing banner to stdout
+
+### --port=
+
+Defines a port for mock handler
+
+### --adminPort
+
+Defines a port for admin API
+
+### --metricsPort
+
+Defines a port for metrics endpoint

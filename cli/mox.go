@@ -33,11 +33,12 @@ var GitHash string
 
 func main() {
 	var debug = flag.Bool("debug", false, "enable debug mode")
+	var accessLog = flag.Bool("accessLog", false, "enable access log")
 	var skipBanner = flag.Bool("skipBanner", false, "skip banner")
 	var mockPort = flag.String("port", "8080", "port for mock server")
 	var adminPort = flag.String("adminPort", "8081", "port for admin server")
 	var metricsPort = flag.String("metricsPort", "9090", "port for metrics server")
-	var mappingsPath = flag.String("mappingsPath", "./mappings", "path to mappings")
+	var configPath = flag.String("configPath", "./config", "path to config (mappings, templates, files)")
 
 	flag.Parse()
 
@@ -59,7 +60,7 @@ func main() {
 	metricsServer := metrics.StartServer(*metricsPort)
 	adminServer := admin.StartServer(*adminPort)
 
-	h, err := mock.NewHandler(*mappingsPath)
+	h, err := mock.NewHandler(*configPath, *accessLog)
 	if err != nil {
 		log.Fatal().Err(err).Msg("failed to initialize mock handler")
 	}
