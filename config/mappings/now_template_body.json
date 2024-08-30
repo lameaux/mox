@@ -1,0 +1,10 @@
+{
+  "request": {
+    "method": "GET",
+    "url": "/now"
+  },
+  "response": {
+    "status": 200,
+    "template": "This text is from 'template' attribute. Now is {{ now }}"
+  }
+}
