@@ -33,6 +33,7 @@ var GitHash string
 
 func main() {
 	var debug = flag.Bool("debug", false, "enable debug mode")
+	var logJson = flag.Bool("logJson", false, "log as json")
 	var accessLog = flag.Bool("accessLog", false, "enable access log")
 	var skipBanner = flag.Bool("skipBanner", false, "skip banner")
 	var mockPort = flag.String("port", "8080", "port for mock server")
@@ -46,6 +47,10 @@ func main() {
 		zerolog.SetGlobalLevel(zerolog.DebugLevel)
 	} else {
 		zerolog.SetGlobalLevel(zerolog.InfoLevel)
+	}
+
+	if !*logJson {
+		log.Logger = log.Output(zerolog.ConsoleWriter{Out: os.Stderr})
 	}
 
 	if !*skipBanner {
