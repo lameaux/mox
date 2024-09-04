@@ -1,6 +1,7 @@
 package admin
 
 import (
+	"fmt"
 	"github.com/rs/zerolog/log"
 	"net/http"
 )
@@ -17,21 +18,21 @@ func handler() http.HandlerFunc {
 	}
 }
 
-func StartServer(port string) *http.Server {
+func StartServer(port int) *http.Server {
 	server := &http.Server{
-		Addr:    ":" + port,
+		Addr:    fmt.Sprintf(":%d", port),
 		Handler: handler(),
 	}
 
 	go func() {
 		if err := server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 			log.Fatal().Err(err).
-				Str("port", port).
+				Int("port", port).
 				Msg("failed to start admin server")
 		}
 	}()
 
-	log.Debug().Str("port", port).Msg("admin server started")
+	log.Debug().Int("port", port).Msg("admin server started")
 
 	return server
 }

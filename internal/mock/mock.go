@@ -1,25 +1,26 @@
 package mock
 
 import (
+	"fmt"
 	"github.com/rs/zerolog/log"
 	"net/http"
 )
 
-func StartServer(port string, handler http.HandlerFunc) *http.Server {
+func StartServer(port int, handler http.HandlerFunc) *http.Server {
 	server := &http.Server{
-		Addr:    ":" + port,
+		Addr:    fmt.Sprintf(":%d", port),
 		Handler: handler,
 	}
 
 	go func() {
 		if err := server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 			log.Fatal().Err(err).
-				Str("port", port).
+				Int("port", port).
 				Msg("failed to start mock server")
 		}
 	}()
 
-	log.Debug().Str("port", port).Msg("mock server started")
+	log.Debug().Int("port", port).Msg("mock server started")
 
 	return server
 }
