@@ -35,11 +35,14 @@ func Render(w http.ResponseWriter, r *http.Request, mappings []*Mapping, accessL
 		}
 	}
 
-	mappingFile := "not found"
+	var mappingFile string
 
 	if found != nil {
 		mappingFile = found.filePath()
 		found.render(w)
+	} else {
+		mappingFile = "not found"
+		http.NotFound(w, r)
 	}
 
 	latency := time.Now().Sub(startTime)
@@ -63,9 +66,5 @@ func Render(w http.ResponseWriter, r *http.Request, mappings []*Mapping, accessL
 			Str("mapping", mappingFile).
 			Dur("latency", latency).
 			Msg("access log")
-	}
-
-	if found == nil {
-		http.NotFound(w, r)
 	}
 }
