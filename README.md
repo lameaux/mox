@@ -13,7 +13,7 @@
 
 It is written in [Go](https://github.com/golang/go) with mappings defined in JSON.
 
-Responses can be generated using [Go templates](https://pkg.go.dev/text/template). We support [sprig](https://masterminds.github.io/sprig/) template functions. 
+Responses can be generated using [Go templates](https://pkg.go.dev/text/template). It supports [sprig](https://masterminds.github.io/sprig/) template functions. 
 
 Try it together with [bro](https://github.com/lameaux/bro) - a load testing tool.
 
@@ -68,7 +68,7 @@ Skips printing banner to stdout.
 
 #### --port=8080
 
-Defines a port for mock handler.
+Defines a port for mocks handler.
 
 #### --adminPort=8181
 
@@ -84,24 +84,24 @@ Path to config location with mappings, files and templates.
 
 # API Endpoints
 
-## mocks
+## mocks handler
 
-### mappings
+### user-defined mappings
 
-- GET http://mox:8080/<mapping_url>
-- POST http://mox:8080/<mapping_url>
+- [GET /<mapping_url>](http://0.0.0.0:8080/user-defined-mapping)
+- POST /<mapping_url>
 - ...
 
-### predefined
+### predefined functions
 
-- http://mox:8080/mox/sleep?seconds=1
+- sleep for N seconds [/mox/sleep?seconds=1](http://0.0.0.0:8080/mox/sleep?seconds=1)
 
-## admin
+## admin handler
 
 ### api
 
-- http://mox:8181/api
+- [http://mox:8181/api](http://0.0.0.0:8181/api)
 
 ### ui
 
-- http://mox:8181/ui
+- [http://mox:8181/ui](http://0.0.0.0:8181/ui)
