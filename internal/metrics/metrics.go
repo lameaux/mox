@@ -14,7 +14,7 @@ var (
 			Name: "http_requests_total",
 			Help: "Total number of HTTP requests",
 		},
-		[]string{"method", "url"},
+		[]string{"method", "url", "mapping"},
 	)
 	HttpRequestDurationSec = prometheus.NewHistogramVec(
 		prometheus.HistogramOpts{
@@ -22,7 +22,7 @@ var (
 			Help:    "Duration of HTTP requests in seconds",
 			Buckets: prometheus.DefBuckets,
 		},
-		[]string{"method", "url", "code"},
+		[]string{"method", "url", "mapping"},
 	)
 )
 
