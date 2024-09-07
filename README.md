@@ -81,3 +81,27 @@ Defines a port for metrics endpoint.
 #### --configPath=./config
 
 Path to config location with mappings, files and templates.
+
+# API Endpoints
+
+## mocks
+
+### mappings
+
+- GET http://mox:8080/<mapping_url>
+- POST http://mox:8080/<mapping_url>
+- ...
+
+### predefined
+
+- http://mox:8080/mox/sleep?seconds=1
+
+## admin
+
+### api
+
+- http://mox:8181/api
+
+### ui
+
+- http://mox:8181/ui

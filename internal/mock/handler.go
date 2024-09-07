@@ -17,13 +17,13 @@ func NewHandler(configPath string, accessLog bool) (http.HandlerFunc, error) {
 	log.Debug().Msg("mappings loaded successfully")
 
 	f := func(w http.ResponseWriter, r *http.Request) {
-		Render(w, r, mappings, accessLog)
+		renderMapping(w, r, mappings, accessLog)
 	}
 
 	return f, nil
 }
 
-func Render(w http.ResponseWriter, r *http.Request, mappings []*Mapping, accessLog bool) {
+func renderMapping(w http.ResponseWriter, r *http.Request, mappings []*Mapping, accessLog bool) {
 	startTime := time.Now()
 
 	var found *Mapping
@@ -35,14 +35,13 @@ func Render(w http.ResponseWriter, r *http.Request, mappings []*Mapping, accessL
 		}
 	}
 
-	var mappingFile string
+	var handlerName string
 
 	if found != nil {
-		mappingFile = found.filePath()
+		handlerName = found.filePath()
 		found.render(w)
 	} else {
-		mappingFile = "not found"
-		http.NotFound(w, r)
+		handlerName = renderPredefined(w, r)
 	}
 
 	latency := time.Now().Sub(startTime)
@@ -50,20 +49,20 @@ func Render(w http.ResponseWriter, r *http.Request, mappings []*Mapping, accessL
 	metrics.HttpRequestsTotal.WithLabelValues(
 		r.Method,
 		r.URL.String(),
-		mappingFile,
+		handlerName,
 	).Inc()
 
 	metrics.HttpRequestDurationSec.WithLabelValues(
 		r.Method,
 		r.URL.String(),
-		mappingFile,
+		handlerName,
 	).Observe(latency.Seconds())
 
 	if accessLog {
 		log.Debug().
 			Str("method", r.Method).
 			Str("url", r.URL.String()).
-			Str("mapping", mappingFile).
+			Str("handler", handlerName).
 			Dur("latency", latency).
 			Msg("access log")
 	}
