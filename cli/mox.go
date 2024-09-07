@@ -36,7 +36,7 @@ func main() {
 	var logJson = flag.Bool("logJson", false, "log as json")
 	var accessLog = flag.Bool("accessLog", false, "enable access log")
 	var skipBanner = flag.Bool("skipBanner", false, "skip banner")
-	var mockPort = flag.Int("port", 8080, "port for mock server")
+	var port = flag.Int("port", 8080, "port for mock server")
 	var adminPort = flag.Int("adminPort", 8181, "port for admin server")
 	var metricsPort = flag.Int("metricsPort", 9090, "port for metrics server")
 	var configPath = flag.String("configPath", "./config", "path to config (mappings, templates, files)")
@@ -67,7 +67,7 @@ func main() {
 		log.Fatal().Err(err).Msg("failed to initialize mock handler")
 	}
 
-	mockServer := mock.StartServer(*mockPort, h)
+	mockServer := mock.StartServer(*port, h)
 	adminServer := admin.StartServer(*adminPort)
 	metricsServer := metrics.StartServer(*metricsPort)
 

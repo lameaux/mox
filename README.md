@@ -11,17 +11,19 @@
 
 # About
 
-It is written in Go with mappings defined in JSON.
+It is written in [Go](https://github.com/golang/go) with mappings defined in JSON.
 
 Responses can be generated using [Go templates](https://pkg.go.dev/text/template). We support [sprig](https://masterminds.github.io/sprig/) template functions. 
 
 Try it together with [bro](https://github.com/lameaux/bro) - a load testing tool.
 
-Check out [nft](https://github.com/lameaux/nft) repo to learn more about bro & mox for non-functional testing.
+Check out [nft repo](https://github.com/lameaux/nft) to learn more about **bro** & **mox** for non-functional testing.
 
 # Installation
 
-Make sure you have `GOPATH` set up correctly.
+Make sure you have [Go](https://go.dev/doc/install) installed and `GOPATH` is set up correctly.
+
+Clone this repository and run:
 
 ```shell
 make install
@@ -29,46 +31,53 @@ make install
 
 # Usage
 
+## mox
+
 ```shell
 mox [flags]
 
---debug 
+--debug
+--logJson 
 --accessLog
 --skipBanner
 --port=8080
---adminPort=8081
+--adminPort=8181
 --metricsPort=9090
 --configPath=./config
 ```
 
-## Flags
+### Flags
 
-### --debug
+#### --debug
 
 Enables debug mode. Results in more detailed logging.
 
-### --accessLog
+#### --logJson
+
+Changes log format to JSON.
+
+#### --accessLog
 
 Requires debug mode (`--debug`).
 
 For all incoming requests, it logs whether they matched any mapping.
 
-### --skipBanner
+#### --skipBanner
 
-Skips printing banner to stdout
+Skips printing banner to stdout.
 
-### --port=
+#### --port=8080
 
-Defines a port for mock handler
+Defines a port for mock handler.
 
-### --adminPort
+#### --adminPort=8181
 
-Defines a port for admin API
+Defines a port for admin API.
 
-### --metricsPort
+#### --metricsPort=9090
 
-Defines a port for metrics endpoint
+Defines a port for metrics endpoint.
 
-### --configPath=./config
+#### --configPath=./config
 
-Path to config location with mappings, files and templates
+Path to config location with mappings, files and templates.
