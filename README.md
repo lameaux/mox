@@ -94,7 +94,8 @@ Path to config location with mappings, files and templates.
 
 ### predefined functions
 
-- sleep for N seconds [/mox/sleep?seconds=1](http://0.0.0.0:8080/mox/sleep?seconds=1)
+- sleep for N ms [/mox/sleep?seconds=1](http://0.0.0.0:8080/mox/sleep?ms=1)
+- sleep for random 0-N ms [/mox/sleep?seconds=1](http://0.0.0.0:8080/mox/sleep/random?ms=5)
 
 ## admin handler
 
