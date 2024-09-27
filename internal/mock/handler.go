@@ -2,10 +2,11 @@ package mock
 
 import (
 	"fmt"
-	"github.com/lameaux/mox/internal/metrics"
-	"github.com/rs/zerolog/log"
 	"net/http"
 	"time"
+
+	"github.com/lameaux/mox/internal/metrics"
+	"github.com/rs/zerolog/log"
 )
 
 func NewHandler(configPath string, accessLog bool) (http.HandlerFunc, error) {
@@ -23,14 +24,15 @@ func NewHandler(configPath string, accessLog bool) (http.HandlerFunc, error) {
 	return f, nil
 }
 
-func renderMapping(w http.ResponseWriter, r *http.Request, mappings []*Mapping, accessLog bool) {
+func renderMapping(writer http.ResponseWriter, req *http.Request, mappings []*Mapping, accessLog bool) {
 	startTime := time.Now()
 
 	var found *Mapping
 
 	for _, m := range mappings {
-		if m.matches(r) {
+		if m.matches(req) {
 			found = m
+
 			break
 		}
 	}
@@ -39,29 +41,29 @@ func renderMapping(w http.ResponseWriter, r *http.Request, mappings []*Mapping, 
 
 	if found != nil {
 		handlerName = found.filePath()
-		found.render(w)
+		found.render(writer)
 	} else {
-		handlerName = renderPredefined(w, r)
+		handlerName = renderPredefined(writer, req)
 	}
 
-	latency := time.Now().Sub(startTime)
+	latency := time.Since(startTime)
 
-	metrics.HttpRequestsTotal.WithLabelValues(
-		r.Method,
-		r.URL.String(),
+	metrics.HTTPRequestsTotal.WithLabelValues(
+		req.Method,
+		req.URL.String(),
 		handlerName,
 	).Inc()
 
-	metrics.HttpRequestDurationSec.WithLabelValues(
-		r.Method,
-		r.URL.String(),
+	metrics.HTTPRequestDurationSec.WithLabelValues(
+		req.Method,
+		req.URL.String(),
 		handlerName,
 	).Observe(latency.Seconds())
 
 	if accessLog {
 		log.Debug().
-			Str("method", r.Method).
-			Str("url", r.URL.String()).
+			Str("method", req.Method).
+			Str("url", req.URL.String()).
 			Str("handler", handlerName).
 			Dur("latency", latency).
 			Msg("access log")

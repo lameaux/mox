@@ -1,16 +1,43 @@
-APP_NAME := mox
+SRC_DIR := .
 BUILD_DIR := ./bin
-BUILD_FILE := $(BUILD_DIR)/$(APP_NAME)
 GIT_HASH := $(shell git rev-parse --short HEAD)
 DOCKER_REPO := ghcr.io
 DOCKER_IMAGE := lameaux/mox
 
+GO_FILES := $(shell find $(SRC_DIR) -name '*.go')
+
 .PHONY: all
-all: clean build
+all: clean build lint test
 
 .PHONY: build
 build:
-	go build -ldflags "-X main.GitHash=$(GIT_HASH)" -o $(BUILD_FILE) ./**/*.go
+	go build -ldflags "-X main.GitHash=$(GIT_HASH)" -o $(BUILD_DIR)/mox $(SRC_DIR)/cmd/mox/*.go
+
+.PHONY: fmt
+fmt:
+	gofumpt -l -w $(GO_FILES)
+
+.PHONY: fmt-install
+fmt-install:
+	go install mvdan.cc/gofumpt@latest
+
+.PHONY: lint
+lint:
+	golangci-lint run
+
+.PHONY: lint-install
+lint-install:
+	go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest
+
+.PHONY: test
+test:
+	go test $(SRC_DIR)/... -coverprofile=coverage.out
+
+.PHONY: coverage
+coverage:
+	go tool cover -func coverage.out | grep "total:" | \
+	awk '{print ((int($$3) > 80) != 1) }'
+
 
 .PHONY: install
 install: build

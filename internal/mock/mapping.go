@@ -3,13 +3,14 @@ package mock
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/rs/zerolog/log"
 	"io/fs"
 	"net/http"
 	"os"
 	"path/filepath"
 	"strings"
 	"text/template"
+
+	"github.com/rs/zerolog/log"
 )
 
 const (
@@ -20,27 +21,27 @@ const (
 )
 
 type Mapping struct {
-	ConfigPath string
-	FileName   string
+	ConfigPath string `json:"-"`
+	FileName   string `json:"-"`
 
 	Request struct {
 		Method string `json:"method"`
 		URL    string `json:"url"`
-	}
+	} `json:"request"`
 
 	Response struct {
 		Status  int               `json:"status"`
 		Headers map[string]string `json:"headers"`
 
 		Body         string         `json:"body"`
-		BodyJson     map[string]any `json:"json"`
+		BodyJSON     map[string]any `json:"json"`
 		BodyFile     string         `json:"file"`
-		RenderedBody []byte
+		RenderedBody []byte         `json:"-"`
 
-		Template         string `json:"template"`
-		TemplateFile     string `json:"templateFile"`
-		RenderedTemplate *template.Template
-	}
+		Template         string             `json:"template"`
+		TemplateFile     string             `json:"templateFile"`
+		RenderedTemplate *template.Template `json:"-"`
+	} `json:"response"`
 }
 
 func (m *Mapping) filePath() string {
@@ -51,6 +52,7 @@ func loadMappings(configPath string) ([]*Mapping, error) {
 	var mappings []*Mapping
 
 	mappingsPath := configPath + "/" + mappingsDir
+
 	err := filepath.Walk(mappingsPath, func(path string, info fs.FileInfo, err error) error {
 		if err != nil {
 			return fmt.Errorf("failed to load file %v: %w", path, err)
@@ -69,29 +71,28 @@ func loadMappings(configPath string) ([]*Mapping, error) {
 		}
 		defer file.Close()
 
-		var m Mapping
+		var newMapping Mapping
 
 		d := json.NewDecoder(file)
-		err = d.Decode(&m)
-		if err != nil {
+
+		if err = d.Decode(&newMapping); err != nil {
 			return fmt.Errorf("failed to open file %v: %w", path, err)
 		}
 
-		m.ConfigPath = configPath
-		m.FileName = filepath.Base(path)
+		newMapping.ConfigPath = configPath
+		newMapping.FileName = filepath.Base(path)
 
-		err = m.prerender()
+		err = newMapping.prerender()
 		if err != nil {
 			return fmt.Errorf("failed to prerender file %v: %w", path, err)
 		}
 
-		mappings = append(mappings, &m)
+		mappings = append(mappings, &newMapping)
 
 		return nil
 	})
-
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to load mappings: %w", err)
 	}
 
 	return mappings, nil
@@ -114,8 +115,8 @@ func (m *Mapping) prerender() error {
 		m.Response.Headers = make(map[string]string)
 	}
 
-	if m.Response.BodyJson != nil {
-		return m.prerenderJson()
+	if m.Response.BodyJSON != nil {
+		return m.prerenderJSON()
 	}
 
 	if m.Response.BodyFile != "" {
@@ -136,8 +137,8 @@ func (m *Mapping) prerender() error {
 	return nil
 }
 
-func (m *Mapping) prerenderJson() error {
-	body, err := json.Marshal(m.Response.BodyJson)
+func (m *Mapping) prerenderJSON() error {
+	body, err := json.Marshal(m.Response.BodyJSON)
 	if err != nil {
 		return fmt.Errorf("failed to render jsonBody: %w", err)
 	}
@@ -145,9 +146,11 @@ func (m *Mapping) prerenderJson() error {
 	m.Response.RenderedBody = body
 
 	contentTypeSet := false
+
 	for h := range m.Response.Headers {
 		if strings.EqualFold(h, headerContentType) {
 			contentTypeSet = true
+
 			break
 		}
 	}
@@ -161,6 +164,7 @@ func (m *Mapping) prerenderJson() error {
 
 func (m *Mapping) prerenderFile() error {
 	path := m.ConfigPath + "/" + filesDir + "/" + m.Response.BodyFile
+
 	body, err := os.ReadFile(path)
 	if err != nil {
 		return fmt.Errorf("failed to read file %v: %w", path, err)
@@ -195,18 +199,18 @@ func (m *Mapping) prerenderTemplateFile() error {
 	return nil
 }
 
-func (m *Mapping) render(w http.ResponseWriter) {
+func (m *Mapping) render(writer http.ResponseWriter) {
 	for k, v := range m.Response.Headers {
-		w.Header().Set(k, v)
+		writer.Header().Set(k, v)
 	}
 
-	w.WriteHeader(m.Response.Status)
+	writer.WriteHeader(m.Response.Status)
 
 	var err error
 	if m.Response.RenderedTemplate != nil {
-		err = m.Response.RenderedTemplate.Execute(w, nil)
+		err = m.Response.RenderedTemplate.Execute(writer, nil)
 	} else {
-		_, err = w.Write(m.Response.RenderedBody)
+		_, err = writer.Write(m.Response.RenderedBody)
 	}
 
 	if err != nil {

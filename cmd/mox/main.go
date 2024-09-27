@@ -4,16 +4,17 @@ import (
 	"context"
 	"flag"
 	"fmt"
-	"github.com/lameaux/mox/internal/admin"
-	"github.com/lameaux/mox/internal/metrics"
-	"github.com/lameaux/mox/internal/mock"
-	"github.com/rs/zerolog"
-	"github.com/rs/zerolog/log"
 	"net/http"
 	"os"
 	"os/signal"
 	"syscall"
 	"time"
+
+	"github.com/lameaux/mox/internal/admin"
+	"github.com/lameaux/mox/internal/metrics"
+	"github.com/lameaux/mox/internal/mock"
+	"github.com/rs/zerolog"
+	"github.com/rs/zerolog/log"
 )
 
 const (
@@ -27,19 +28,27 @@ const (
 `
 	appName    = "mox"
 	appVersion = "v0.0.1"
+
+	defaultPortMocks   = 8080
+	defaultPortAdmin   = 8181
+	defaultPortMetrics = 9090
+
+	stopTimeout = 5 * time.Second
 )
 
-var GitHash string
+var GitHash string //nolint:gochecknoglobals
 
 func main() {
-	var debug = flag.Bool("debug", false, "enable debug mode")
-	var logJson = flag.Bool("logJson", false, "log as json")
-	var accessLog = flag.Bool("accessLog", false, "enable access log")
-	var skipBanner = flag.Bool("skipBanner", false, "skip banner")
-	var port = flag.Int("port", 8080, "port for mock server")
-	var adminPort = flag.Int("adminPort", 8181, "port for admin server")
-	var metricsPort = flag.Int("metricsPort", 9090, "port for metrics server")
-	var configPath = flag.String("configPath", "./config", "path to config (mappings, templates, files)")
+	var (
+		debug       = flag.Bool("debug", false, "enable debug mode")
+		logJSON     = flag.Bool("logJson", false, "log as json")
+		accessLog   = flag.Bool("accessLog", false, "enable access log")
+		skipBanner  = flag.Bool("skipBanner", false, "skip banner")
+		port        = flag.Int("port", defaultPortMocks, "port for mock server")
+		adminPort   = flag.Int("adminPort", defaultPortAdmin, "port for admin server")
+		metricsPort = flag.Int("metricsPort", defaultPortMetrics, "port for metrics server")
+		configPath  = flag.String("configPath", "./config", "path to config (mappings, templates, files)")
+	)
 
 	flag.Parse()
 
@@ -49,18 +58,15 @@ func main() {
 		zerolog.SetGlobalLevel(zerolog.InfoLevel)
 	}
 
-	if !*logJson {
+	if !*logJSON {
 		log.Logger = log.Output(zerolog.ConsoleWriter{Out: os.Stderr})
 	}
 
 	if !*skipBanner {
-		fmt.Print(logo)
+		fmt.Print(logo) //nolint:forbidigo
 	}
 
 	log.Info().Str("version", appVersion).Str("build", GitHash).Msg(appName)
-
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
 
 	h, err := mock.NewHandler(*configPath, *accessLog)
 	if err != nil {
@@ -70,6 +76,9 @@ func main() {
 	mockServer := mock.StartServer(*port, h)
 	adminServer := admin.StartServer(*adminPort)
 	metricsServer := metrics.StartServer(*metricsPort)
+
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
 
 	handleSignals(func() {
 		stopServer(ctx, metricsServer)
@@ -89,7 +98,7 @@ func handleSignals(shutdownFn func()) {
 }
 
 func stopServer(ctx context.Context, server *http.Server) {
-	timedOutCtx, cancel := context.WithTimeout(ctx, 5*time.Second)
+	timedOutCtx, cancel := context.WithTimeout(ctx, stopTimeout)
 	defer cancel()
 
 	if err := server.Shutdown(timedOutCtx); err != nil {

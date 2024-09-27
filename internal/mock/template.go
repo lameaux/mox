@@ -1,8 +1,9 @@
 package mock
 
 import (
-	"github.com/Masterminds/sprig/v3"
 	"text/template"
+
+	"github.com/Masterminds/sprig/v3"
 )
 
 func funcMap() template.FuncMap {
