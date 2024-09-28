@@ -30,3 +30,14 @@ jobs:
 
       - name: Test
         run: make test
+
+      - name: Copy Files
+        run: |
+          mkdir artifacts
+          cp mox artifacts/.
+
+      - name: Archive
+        uses: actions/upload-artifact@v4
+        with:
+          name: mox
+          path: artifacts
