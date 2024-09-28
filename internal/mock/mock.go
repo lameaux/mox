@@ -13,7 +13,7 @@ const (
 	readHeaderTimeout = 5 * time.Second
 )
 
-func StartServer(port int, handler http.HandlerFunc) *http.Server {
+func StartServer(port int, handler http.Handler) *http.Server {
 	server := &http.Server{
 		Addr:              fmt.Sprintf(":%d", port),
 		ReadHeaderTimeout: readHeaderTimeout,

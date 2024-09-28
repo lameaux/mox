@@ -6,29 +6,23 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/lameaux/mox/internal/banner"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/rs/zerolog/log"
 )
 
 const (
-	path = "/admin"
+	pathIndex   = "/"
+	pathMetrics = "/metrics"
+	pathAPI     = "/api"
 
 	readHeaderTimeout = 5 * time.Second
 )
 
 func handler() http.HandlerFunc {
 	return func(writer http.ResponseWriter, req *http.Request) {
-		if req.URL.Path != path {
-			http.NotFound(writer, req)
-
-			return
-		}
-
-		writer.WriteHeader(http.StatusOK)
-
-		_, err := writer.Write([]byte("OK"))
-		if err != nil {
-			log.Warn().Err(err).Msg("failed to write response")
-		}
+		h := handlerByRequest(req)
+		h.ServeHTTP(writer, req)
 	}
 }
 
@@ -50,4 +44,39 @@ func StartServer(port int) *http.Server {
 	log.Debug().Int("port", port).Msg("admin server started")
 
 	return server
+}
+
+func handlerByRequest(req *http.Request) http.Handler {
+	switch req.URL.Path {
+	case pathIndex:
+		return IndexHandler()
+	case pathAPI:
+		return APIHandler()
+	case pathMetrics:
+		return promhttp.Handler()
+	}
+
+	return http.NotFoundHandler()
+}
+
+func IndexHandler() http.Handler {
+	return http.HandlerFunc(func(writer http.ResponseWriter, _ *http.Request) {
+		writer.WriteHeader(http.StatusOK)
+
+		_, err := writer.Write([]byte(banner.Banner))
+		if err != nil {
+			log.Warn().Err(err).Msg("failed to write response")
+		}
+	})
+}
+
+func APIHandler() http.Handler {
+	return http.HandlerFunc(func(writer http.ResponseWriter, _ *http.Request) {
+		writer.WriteHeader(http.StatusOK)
+
+		_, err := writer.Write([]byte("API"))
+		if err != nil {
+			log.Warn().Err(err).Msg("failed to write response")
+		}
+	})
 }

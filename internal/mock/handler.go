@@ -5,11 +5,20 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/lameaux/mox/internal/metrics"
 	"github.com/rs/zerolog/log"
+	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
+	"go.opentelemetry.io/otel/exporters/prometheus"
+	"go.opentelemetry.io/otel/sdk/metric"
 )
 
-func NewHandler(configPath string, accessLog bool) (http.HandlerFunc, error) {
+func NewHandler(configPath string, accessLog bool) (http.Handler, error) {
+	exporter, err := prometheus.New()
+	if err != nil {
+		return nil, fmt.Errorf("failed to create prometheus exporter: %w", err)
+	}
+
+	provider := metric.NewMeterProvider(metric.WithReader(exporter))
+
 	mappings, err := loadMappings(configPath)
 	if err != nil {
 		return nil, fmt.Errorf("failed to load mappings from %v: %w", configPath, err)
@@ -21,7 +30,13 @@ func NewHandler(configPath string, accessLog bool) (http.HandlerFunc, error) {
 		renderMapping(w, r, mappings, accessLog)
 	}
 
-	return f, nil
+	instrumented := otelhttp.NewHandler(
+		http.HandlerFunc(f),
+		"mox",
+		otelhttp.WithMeterProvider(provider),
+	)
+
+	return instrumented, nil
 }
 
 func renderMapping(writer http.ResponseWriter, req *http.Request, mappings []*Mapping, accessLog bool) {
@@ -47,18 +62,6 @@ func renderMapping(writer http.ResponseWriter, req *http.Request, mappings []*Ma
 	}
 
 	latency := time.Since(startTime)
-
-	metrics.HTTPRequestsTotal.WithLabelValues(
-		req.Method,
-		req.URL.String(),
-		handlerName,
-	).Inc()
-
-	metrics.HTTPRequestDurationSec.WithLabelValues(
-		req.Method,
-		req.URL.String(),
-		handlerName,
-	).Observe(latency.Seconds())
 
 	if accessLog {
 		log.Debug().

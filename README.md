@@ -41,8 +41,7 @@ mox [flags]
 --accessLog
 --skipBanner
 --port=8080
---adminPort=8181
---metricsPort=9090
+--adminPort=9090
 --configPath=./config
 ```
 
@@ -70,13 +69,9 @@ Skips printing banner to stdout.
 
 Defines a port for mocks handler.
 
-#### --adminPort=8181
+#### --adminPort=9090
 
-Defines a port for admin API.
-
-#### --metricsPort=9090
-
-Defines a port for metrics endpoint.
+Defines a port for admin API (including /metrics endpoint).
 
 #### --configPath=./config
 
@@ -101,8 +96,8 @@ Path to config location with mappings, files and templates.
 
 ### api
 
-- [http://mox:8181/api](http://0.0.0.0:8181/api)
+- [http://mox:9090/api](http://0.0.0.0:9090/api)
 
-### ui
+### metrics
 
-- [http://mox:8181/ui](http://0.0.0.0:8181/ui)
+- [http://mox:9090/metrics](http://0.0.0.0:9090/metrics)

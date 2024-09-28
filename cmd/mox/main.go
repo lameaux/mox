@@ -11,27 +11,18 @@ import (
 	"time"
 
 	"github.com/lameaux/mox/internal/admin"
-	"github.com/lameaux/mox/internal/metrics"
+	"github.com/lameaux/mox/internal/banner"
 	"github.com/lameaux/mox/internal/mock"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 )
 
 const (
-	logo = `
- █████████████    ██████  █████ █████
-░░███░░███░░███  ███░░███░░███ ░░███ 
- ░███ ░███ ░███ ░███ ░███ ░░░█████░  
- ░███ ░███ ░███ ░███ ░███  ███░░░███ 
- █████░███ █████░░██████  █████ █████
-░░░░░ ░░░ ░░░░░  ░░░░░░  ░░░░░ ░░░░░           
-`
 	appName    = "mox"
 	appVersion = "v0.0.1"
 
-	defaultPortMocks   = 8080
-	defaultPortAdmin   = 8181
-	defaultPortMetrics = 9090
+	defaultPortMocks = 8080
+	defaultPortAdmin = 9090
 
 	stopTimeout = 5 * time.Second
 )
@@ -40,14 +31,13 @@ var GitHash string //nolint:gochecknoglobals
 
 func main() {
 	var (
-		debug       = flag.Bool("debug", false, "enable debug mode")
-		logJSON     = flag.Bool("logJson", false, "log as json")
-		accessLog   = flag.Bool("accessLog", false, "enable access log")
-		skipBanner  = flag.Bool("skipBanner", false, "skip banner")
-		port        = flag.Int("port", defaultPortMocks, "port for mock server")
-		adminPort   = flag.Int("adminPort", defaultPortAdmin, "port for admin server")
-		metricsPort = flag.Int("metricsPort", defaultPortMetrics, "port for metrics server")
-		configPath  = flag.String("configPath", "./config", "path to config (mappings, templates, files)")
+		debug      = flag.Bool("debug", false, "enable debug mode")
+		logJSON    = flag.Bool("logJson", false, "log as json")
+		accessLog  = flag.Bool("accessLog", false, "enable access log")
+		skipBanner = flag.Bool("skipBanner", false, "skip banner")
+		port       = flag.Int("port", defaultPortMocks, "port for mock server")
+		adminPort  = flag.Int("adminPort", defaultPortAdmin, "port for admin server")
+		configPath = flag.String("configPath", "./config", "path to config (mappings, templates, files)")
 	)
 
 	flag.Parse()
@@ -63,7 +53,7 @@ func main() {
 	}
 
 	if !*skipBanner {
-		fmt.Print(logo) //nolint:forbidigo
+		fmt.Print(banner.Banner) //nolint:forbidigo
 	}
 
 	log.Info().Str("version", appVersion).Str("build", GitHash).Msg(appName)
@@ -75,13 +65,11 @@ func main() {
 
 	mockServer := mock.StartServer(*port, h)
 	adminServer := admin.StartServer(*adminPort)
-	metricsServer := metrics.StartServer(*metricsPort)
 
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
 	handleSignals(func() {
-		stopServer(ctx, metricsServer)
 		stopServer(ctx, adminServer)
 		stopServer(ctx, mockServer)
 		cancel()

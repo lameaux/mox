@@ -4,7 +4,7 @@ GIT_HASH := $(shell git rev-parse --short HEAD)
 DOCKER_REPO := ghcr.io
 DOCKER_IMAGE := lameaux/mox
 
-GO_FILES := $(shell find $(SRC_DIR) -name '*.go')
+GO_FILES := $(shell find $(SRC_DIR) -name '*.go' ! -path '$(SRC_DIR)/protos/*go')
 
 .PHONY: all
 all: clean build lint test
@@ -15,10 +15,12 @@ build:
 
 .PHONY: fmt
 fmt:
+	gci write $(GO_FILES) --skip-generated -s standard -s default
 	gofumpt -l -w $(GO_FILES)
 
 .PHONY: fmt-install
 fmt-install:
+	go install github.com/daixiang0/gci@latest
 	go install mvdan.cc/gofumpt@latest
 
 .PHONY: lint
