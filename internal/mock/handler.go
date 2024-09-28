@@ -2,6 +2,7 @@ package mock
 
 import (
 	"fmt"
+	"go.opentelemetry.io/otel/attribute"
 	"net/http"
 	"time"
 
@@ -63,6 +64,8 @@ func renderMapping(writer http.ResponseWriter, req *http.Request, mappings []*Ma
 
 	latency := time.Since(startTime)
 
+	addMetricLabels(req, handlerName)
+
 	if accessLog {
 		log.Debug().
 			Str("method", req.Method).
@@ -71,4 +74,18 @@ func renderMapping(writer http.ResponseWriter, req *http.Request, mappings []*Ma
 			Dur("latency", latency).
 			Msg("access log")
 	}
+}
+
+func addMetricLabels(r *http.Request, handlerName string) {
+	labeler, _ := otelhttp.LabelerFromContext(r.Context())
+	labeler.Add(
+		attribute.KeyValue{
+			Key:   "url",
+			Value: attribute.StringValue(r.URL.Path),
+		},
+		attribute.KeyValue{
+			Key:   "handler",
+			Value: attribute.StringValue(handlerName),
+		},
+	)
 }
