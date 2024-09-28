@@ -43,11 +43,14 @@ coverage:
 
 .PHONY: install
 install: build
-	mv $(BUILD_FILE) $(GOPATH)/bin
+	mv $(BUILD_DIR)/mox $(GOPATH)/bin
 
 .PHONY: run
 run: build
-	$(BUILD_FILE) $(ARGS)
+	$(BUILD_DIR)/mox $(ARGS)
+
+.PHONY: serve
+serve: run
 
 .PHONY: clean
 clean:
