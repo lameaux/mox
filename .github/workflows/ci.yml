@@ -23,6 +23,16 @@ jobs:
       - name: Build
         run: make build
 
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: stable
+
       - name: Lint
         uses: golangci/golangci-lint-action@v6
         with:
@@ -30,9 +40,3 @@ jobs:
 
       - name: Test
         run: make test
-
-      - name: Archive
-        uses: actions/upload-artifact@v4
-        with:
-          name: mox
-          path: bin
