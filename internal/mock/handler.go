@@ -2,12 +2,12 @@ package mock
 
 import (
 	"fmt"
-	"go.opentelemetry.io/otel/attribute"
 	"net/http"
 	"time"
 
 	"github.com/rs/zerolog/log"
 	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
+	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/exporters/prometheus"
 	"go.opentelemetry.io/otel/sdk/metric"
 )
