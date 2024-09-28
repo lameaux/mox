@@ -7,7 +7,7 @@ COPY go.mod go.sum ./
 RUN go mod download
 
 COPY . .
-RUN go build -ldflags "-X main.GitHash=$GIT_HASH" -o mox ./**/*.go
+RUN go build -ldflags "-X main.GitHash=$GIT_HASH" -o mox ./cmd/mox/*.go
 
 FROM alpine:latest
 
