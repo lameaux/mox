@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/lameaux/mox/internal/mock/predefined"
 	"github.com/rs/zerolog/log"
 	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
 	"go.opentelemetry.io/otel/attribute"
@@ -59,7 +60,7 @@ func renderMapping(writer http.ResponseWriter, req *http.Request, mappings []*Ma
 		handlerName = found.filePath()
 		found.render(writer)
 	} else {
-		handlerName = renderPredefined(writer, req)
+		handlerName = predefined.Render(writer, req)
 	}
 
 	latency := time.Since(startTime)
