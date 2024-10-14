@@ -37,7 +37,7 @@ func main() {
 		skipBanner = flag.Bool("skipBanner", false, "skip banner")
 		port       = flag.Int("port", defaultPortMocks, "port for mock server")
 		adminPort  = flag.Int("adminPort", defaultPortAdmin, "port for admin server")
-		configPath = flag.String("configPath", "./config", "path to config (mappings, templates, files)")
+		configPath = flag.String("configPath", "", "path to config (mappings, templates, files)")
 	)
 
 	flag.Parse()

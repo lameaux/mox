@@ -21,9 +21,13 @@ func NewHandler(configPath string, accessLog bool) (http.Handler, error) {
 
 	provider := metric.NewMeterProvider(metric.WithReader(exporter))
 
-	mappings, err := loadMappings(configPath)
-	if err != nil {
-		return nil, fmt.Errorf("failed to load mappings from %v: %w", configPath, err)
+	var mappings []*Mapping
+
+	if configPath != "" {
+		mappings, err = loadMappings(configPath)
+		if err != nil {
+			return nil, fmt.Errorf("failed to load mappings from %v: %w", configPath, err)
+		}
 	}
 
 	log.Debug().Msg("mappings loaded successfully")
