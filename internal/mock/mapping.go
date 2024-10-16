@@ -58,13 +58,18 @@ func loadMappings(configPath string) ([]*Mapping, error) {
 			return fmt.Errorf("failed to load file %v: %w", path, err)
 		}
 
+		if info.IsDir() {
+			// skip dirs
+			return nil
+		}
+
 		statInfo, err := os.Stat(path)
 		if err != nil {
 			return fmt.Errorf("failed to stat file %v: %w", path, err)
 		}
 
-		if info.IsDir() || statInfo.IsDir() {
-			// skip dirs
+		if statInfo.IsDir() {
+			// skip symlinks that points to dir
 			return nil
 		}
 
