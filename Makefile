@@ -63,8 +63,8 @@ docker-build:
 
 .PHONY: docker-push
 docker-push:
-	docker tag $(DOCKER_IMAGE):$(GIT_HASH) ghcr.io/$(DOCKER_IMAGE):latest
-	docker push ghcr.io/$(DOCKER_IMAGE):latest
+	docker tag $(DOCKER_IMAGE):$(GIT_HASH) $(DOCKER_REPO)/$(DOCKER_IMAGE):latest
+	docker push $(DOCKER_REPO)/$(DOCKER_IMAGE):latest
 
 .PHONY: docker-release
 docker-release: docker-build docker-push

@@ -15,6 +15,8 @@ import (
 	"github.com/lameaux/mox/internal/mock"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
+
+	_ "net/http/pprof"
 )
 
 const (
