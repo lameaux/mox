@@ -13,10 +13,9 @@ import (
 	"github.com/lameaux/mox/internal/admin"
 	"github.com/lameaux/mox/internal/banner"
 	"github.com/lameaux/mox/internal/mock"
+	"github.com/lameaux/mox/internal/pprof"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
-
-	_ "net/http/pprof"
 )
 
 const (
@@ -25,6 +24,7 @@ const (
 
 	defaultPortMocks = 8080
 	defaultPortAdmin = 9090
+	defaultPortPprof = 6060
 
 	stopTimeout = 5 * time.Second
 )
@@ -39,6 +39,7 @@ func main() {
 		skipBanner = flag.Bool("skipBanner", false, "skip banner")
 		port       = flag.Int("port", defaultPortMocks, "port for mock server")
 		adminPort  = flag.Int("adminPort", defaultPortAdmin, "port for admin server")
+		pprofPort  = flag.Int("pprofPort", defaultPortPprof, "port for pprof")
 		configPath = flag.String("configPath", "", "path to config (mappings, templates, files)")
 	)
 
@@ -67,11 +68,13 @@ func main() {
 
 	mockServer := mock.StartServer(*port, h)
 	adminServer := admin.StartServer(*adminPort)
+	pprofServer := pprof.StartServer(*pprofPort)
 
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
 	handleSignals(func() {
+		stopServer(ctx, pprofServer)
 		stopServer(ctx, adminServer)
 		stopServer(ctx, mockServer)
 		cancel()
