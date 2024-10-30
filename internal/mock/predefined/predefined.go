@@ -1,6 +1,7 @@
 package predefined
 
 import (
+	"errors"
 	"net/http"
 	"strconv"
 
@@ -12,11 +13,14 @@ var mapping = map[string]http.HandlerFunc{
 	"/mox/sleep":        sleep,
 	"/mox/sleep/random": sleepRandom,
 	"/mox/rabbitmq":     rabbitmq,
+	"/mox/proxy/http":   httpProxy,
 }
 
 const (
 	responseNotFound = "not_found"
 )
+
+var errInvalidRequest = errors.New("invalid request")
 
 func Render(writer http.ResponseWriter, req *http.Request) string {
 	handler, ok := mapping[req.URL.Path]
@@ -34,12 +38,12 @@ func Render(writer http.ResponseWriter, req *http.Request) string {
 func getIntQueryParam(r *http.Request, param string) (int, error) {
 	queryParams := r.URL.Query()
 
-	seconds := queryParams.Get(param)
-	if seconds == "" {
-		seconds = "0"
+	val := queryParams.Get(param)
+	if val == "" {
+		val = "0"
 	}
 
-	return strconv.Atoi(seconds) //nolint:wrapcheck
+	return strconv.Atoi(val) //nolint:wrapcheck
 }
 
 func sendError(w http.ResponseWriter, statusCode int, err error) {
