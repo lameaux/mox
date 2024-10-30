@@ -4,9 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/lameaux/mox/internal/config"
-	"github.com/lameaux/mox/internal/httpclient"
-	"github.com/rs/zerolog/log"
 	"io/fs"
 	"net/http"
 	"os"
@@ -14,6 +11,10 @@ import (
 	"strings"
 	"text/template"
 	"time"
+
+	"github.com/lameaux/mox/internal/config"
+	"github.com/lameaux/mox/internal/httpclient"
+	"github.com/rs/zerolog/log"
 )
 
 const (
@@ -221,6 +222,7 @@ func (m *Mapping) prerenderTemplateFile() error {
 
 	return nil
 }
+
 func (m *Mapping) render(ctx context.Context, writer http.ResponseWriter) {
 	var err error
 
@@ -242,7 +244,12 @@ func (m *Mapping) renderProxy(ctx context.Context, writer http.ResponseWriter) e
 		},
 	)
 
-	return httpclient.Proxy(ctx, m.Proxy.Method, m.Proxy.URL, client, writer)
+	err := httpclient.Proxy(ctx, m.Proxy.Method, m.Proxy.URL, client, writer)
+	if err != nil {
+		return fmt.Errorf("failed to make a call via proxy: %w", err)
+	}
+
+	return nil
 }
 
 func (m *Mapping) renderResponse(writer http.ResponseWriter) error {
@@ -259,5 +266,5 @@ func (m *Mapping) renderResponse(writer http.ResponseWriter) error {
 		_, err = writer.Write(m.Response.RenderedBody)
 	}
 
-	return err
+	return fmt.Errorf("failed to render response: %w", err)
 }
