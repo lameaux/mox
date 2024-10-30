@@ -28,9 +28,8 @@ func NewHandler(configPath string, accessLog bool) (http.Handler, error) {
 		if err != nil {
 			return nil, fmt.Errorf("failed to load mappings from %v: %w", configPath, err)
 		}
+		log.Debug().Msg("mappings loaded successfully")
 	}
-
-	log.Debug().Msg("mappings loaded successfully")
 
 	f := func(w http.ResponseWriter, r *http.Request) {
 		renderMapping(w, r, mappings, accessLog)
@@ -62,7 +61,7 @@ func renderMapping(writer http.ResponseWriter, req *http.Request, mappings []*Ma
 
 	if found != nil {
 		handlerName = found.filePath()
-		found.render(writer)
+		found.render(req.Context(), writer)
 	} else {
 		handlerName = predefined.Render(writer, req)
 	}

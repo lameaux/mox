@@ -1,6 +1,9 @@
 package httpclient
 
 import (
+	"context"
+	"fmt"
+	"io"
 	"net/http"
 
 	"github.com/lameaux/mox/internal/config"
@@ -38,4 +41,31 @@ func New(conf config.HTTPClient) *http.Client {
 	}
 
 	return client
+}
+
+func Proxy(ctx context.Context, method string, url string, client *http.Client, httpWriter http.ResponseWriter) error {
+	req, err := http.NewRequestWithContext(ctx, method, url, nil)
+	if err != nil {
+		return fmt.Errorf("failed to generate request: %w", err)
+	}
+
+	resp, err := client.Do(req)
+	if err != nil {
+		return fmt.Errorf("failed to get content: %w", err)
+	}
+
+	defer resp.Body.Close()
+
+	httpWriter.WriteHeader(resp.StatusCode)
+
+	for k, v := range resp.Header {
+		httpWriter.Header().Set(k, v[0])
+	}
+
+	_, err = io.Copy(httpWriter, resp.Body)
+	if err != nil {
+		return fmt.Errorf("failed to write response: %w", err)
+	}
+
+	return nil
 }

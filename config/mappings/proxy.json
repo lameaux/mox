@@ -1,0 +1,10 @@
+{
+  "request": {
+    "method": "GET",
+    "url": "/proxy/httpbin"
+  },
+  "proxy": {
+    "method": "GET",
+    "url": "https://httpbin.org/get"
+  }
+}

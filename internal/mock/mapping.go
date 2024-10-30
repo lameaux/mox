@@ -1,16 +1,19 @@
 package mock
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
+	"github.com/lameaux/mox/internal/config"
+	"github.com/lameaux/mox/internal/httpclient"
+	"github.com/rs/zerolog/log"
 	"io/fs"
 	"net/http"
 	"os"
 	"path/filepath"
 	"strings"
 	"text/template"
-
-	"github.com/rs/zerolog/log"
+	"time"
 )
 
 const (
@@ -29,7 +32,7 @@ type Mapping struct {
 		URL    string `json:"url"`
 	} `json:"request"`
 
-	Response struct {
+	Response *struct {
 		Status  int               `json:"status"`
 		Headers map[string]string `json:"headers"`
 
@@ -42,6 +45,12 @@ type Mapping struct {
 		TemplateFile     string             `json:"templateFile"`
 		RenderedTemplate *template.Template `json:"-"`
 	} `json:"response"`
+
+	Proxy *struct {
+		Method  string `json:"method"`
+		URL     string `json:"url"`
+		Timeout int    `json:"timeout"`
+	} `json:"proxy"`
 }
 
 func (m *Mapping) filePath() string {
@@ -121,6 +130,10 @@ func (m *Mapping) matches(r *http.Request) bool {
 }
 
 func (m *Mapping) prerender() error {
+	if m.Response == nil {
+		return nil
+	}
+
 	if m.Response.Headers == nil {
 		m.Response.Headers = make(map[string]string)
 	}
@@ -208,8 +221,31 @@ func (m *Mapping) prerenderTemplateFile() error {
 
 	return nil
 }
+func (m *Mapping) render(ctx context.Context, writer http.ResponseWriter) {
+	var err error
 
-func (m *Mapping) render(writer http.ResponseWriter) {
+	if m.Proxy != nil {
+		err = m.renderProxy(ctx, writer)
+	} else {
+		err = m.renderResponse(writer)
+	}
+
+	if err != nil {
+		log.Warn().Err(err).Str("mapping", m.filePath()).Msg("failed to write response")
+	}
+}
+
+func (m *Mapping) renderProxy(ctx context.Context, writer http.ResponseWriter) error {
+	client := httpclient.New(
+		config.HTTPClient{
+			Timeout: time.Duration(m.Proxy.Timeout) * time.Second,
+		},
+	)
+
+	return httpclient.Proxy(ctx, m.Proxy.Method, m.Proxy.URL, client, writer)
+}
+
+func (m *Mapping) renderResponse(writer http.ResponseWriter) error {
 	for k, v := range m.Response.Headers {
 		writer.Header().Set(k, v)
 	}
@@ -223,7 +259,5 @@ func (m *Mapping) render(writer http.ResponseWriter) {
 		_, err = writer.Write(m.Response.RenderedBody)
 	}
 
-	if err != nil {
-		log.Warn().Err(err).Str("mapping", m.filePath()).Msg("failed to write response")
-	}
+	return err
 }
