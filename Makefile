@@ -8,10 +8,10 @@ DOCKER_BUILD := docker buildx build --platform linux/amd64,linux/arm64
 GO_FILES := $(shell find $(SRC_DIR) -name '*.go' ! -path '$(SRC_DIR)/protos/*go')
 
 .PHONY: all
-all: clean build lint test
+all: build lint test
 
 .PHONY: build
-build:
+build: clean
 	go build -ldflags "-X main.GitHash=$(GIT_HASH)" -o $(BUILD_DIR)/mox $(SRC_DIR)/cmd/mox/*.go
 
 .PHONY: fmt
@@ -44,7 +44,7 @@ coverage:
 
 .PHONY: install
 install: build
-	mv $(BUILD_DIR)/mox $(GOPATH)/bin
+	cp $(BUILD_DIR)/mox $(GOPATH)/bin
 
 .PHONY: run
 run: build
