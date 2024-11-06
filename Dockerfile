@@ -1,7 +1,9 @@
-FROM golang:1.22-alpine AS builder
-ARG GIT_HASH
+FROM golang:1.23-bookworm AS builder
+ARG VERSION
+ARG BUILD_HASH
+ARG BUILD_DATE
 
-WORKDIR /
+WORKDIR /app
 
 COPY go.mod go.sum ./
 RUN go mod download
@@ -9,12 +11,12 @@ RUN go mod download
 COPY . .
 
 ENV CGO_ENABLED=0 GOOS=linux
-RUN go build -ldflags "-X main.GitHash=$GIT_HASH" -o mox ./cmd/mox/*.go
+RUN go build -ldflags "-X main.Version=$VERSION -X main.BuildHash=$BUILD_HASH -X main.BuildDate=$BUILD_DATE" -o mox ./cmd/mox/*.go
 
-FROM alpine:latest
+FROM gcr.io/distroless/base-debian12
 
 WORKDIR /
 
-COPY --from=builder /mox .
+COPY --from=builder /app/mox .
 
 ENTRYPOINT ["/mox"]

@@ -19,8 +19,7 @@ import (
 )
 
 const (
-	appName    = "mox"
-	appVersion = "v0.0.1"
+	appName = "mox"
 
 	defaultPortMocks = 8080
 	defaultPortAdmin = 9090
@@ -29,7 +28,11 @@ const (
 	stopTimeout = 5 * time.Second
 )
 
-var GitHash string //nolint:gochecknoglobals
+var (
+	Version   string //nolint:gochecknoglobals
+	BuildHash string //nolint:gochecknoglobals
+	BuildDate string //nolint:gochecknoglobals
+)
 
 func main() {
 	var (
@@ -59,7 +62,10 @@ func main() {
 		fmt.Print(banner.Banner) //nolint:forbidigo
 	}
 
-	log.Info().Str("version", appVersion).Str("build", GitHash).Msg(appName)
+	log.Info().Str("version", Version).
+		Str("buildHash", BuildHash).
+		Str("buildDate", BuildDate).
+		Msg(appName)
 
 	h, err := mock.NewHandler(*configPath, *accessLog)
 	if err != nil {
