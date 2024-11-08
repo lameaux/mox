@@ -266,5 +266,9 @@ func (m *Mapping) renderResponse(writer http.ResponseWriter) error {
 		_, err = writer.Write(m.Response.RenderedBody)
 	}
 
-	return fmt.Errorf("failed to render response: %w", err)
+	if err != nil {
+		return fmt.Errorf("failed to render response: %w", err)
+	}
+
+	return nil
 }
