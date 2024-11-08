@@ -4,7 +4,7 @@ BUILD_DIR := ./bin
 VERSION := v0.1.0
 BUILD_HASH := $(shell git rev-parse --short HEAD)
 BUILD_DATE := $(shell date -u +"%Y-%m-%dT%H:%M:%SZ")
-BUILD_PGO := auto
+BUILD_PGO := off
 
 DOCKER_REPO := ghcr.io
 DOCKER_IMAGE := lameaux/mox
@@ -64,7 +64,7 @@ serve: run
 
 .PHONE: loadtest
 loadtest:
-	bro -r 5000 -t 200 -d 45s -u http://localhost:8080/mox/uuid
+	bro -r 1000 -t 100 -d 45s -u http://localhost:8080/mox/uuid
 
 .PHONE: profile
 profile:
@@ -80,6 +80,7 @@ docker-build:
 		--build-arg VERSION=$(VERSION) \
 		--build-arg BUILD_HASH=$(BUILD_HASH) \
 		--build-arg BUILD_DATE=$(BUILD_DATE) \
+		--build-arg BUILD_PGO=$(BUILD_PGO) \
  		-t $(DOCKER_IMAGE):$(VERSION)-$(BUILD_HASH) .
 
 .PHONY: docker-push
