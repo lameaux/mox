@@ -4,6 +4,7 @@ BUILD_DIR := ./bin
 VERSION := v0.1.0
 BUILD_HASH := $(shell git rev-parse --short HEAD)
 BUILD_DATE := $(shell date -u +"%Y-%m-%dT%H:%M:%SZ")
+BUILD_PGO := auto
 
 DOCKER_REPO := ghcr.io
 DOCKER_IMAGE := lameaux/mox
@@ -19,7 +20,7 @@ all: build lint test
 
 .PHONY: build
 build: clean
-	go build -ldflags "-X main.Version=$(VERSION) -X main.BuildHash=$(BUILD_HASH) -X main.BuildDate=$(BUILD_DATE)" \
+	go build -pgo=$(BUILD_PGO) -ldflags "-X main.Version=$(VERSION) -X main.BuildHash=$(BUILD_HASH) -X main.BuildDate=$(BUILD_DATE)" \
 		-o $(BUILD_DIR)/mox $(SRC_DIR)/cmd/mox/*.go
 
 .PHONY: fmt
@@ -60,6 +61,14 @@ run: build
 
 .PHONY: serve
 serve: run
+
+.PHONE: loadtest
+loadtest:
+	bro -r 1000 -t 100 -d 1m -u http://localhost:8080/mox/uuid
+
+.PHONE: profile
+profile:
+	curl -o default.pgo http://localhost:6060/debug/pprof/profile?seconds=30
 
 .PHONY: clean
 clean:
