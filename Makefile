@@ -64,7 +64,7 @@ serve: run
 
 .PHONE: loadtest
 loadtest:
-	bro -r 1000 -t 100 -d 1m -u http://localhost:8080/mox/uuid
+	bro -r 5000 -t 200 -d 45s -u http://localhost:8080/mox/uuid
 
 .PHONE: profile
 profile:

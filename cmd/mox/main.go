@@ -7,6 +7,8 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"runtime"
+	"runtime/debug"
 	"syscall"
 	"time"
 
@@ -40,6 +42,7 @@ func main() {
 		logJSON    = flag.Bool("logJson", false, "log as json")
 		accessLog  = flag.Bool("accessLog", false, "enable access log")
 		skipBanner = flag.Bool("skipBanner", false, "skip banner")
+		buildInfo  = flag.Bool("buildInfo", false, "print build info on start up")
 		port       = flag.Int("port", defaultPortMocks, "port for mock server")
 		adminPort  = flag.Int("adminPort", defaultPortAdmin, "port for admin server")
 		pprofPort  = flag.Int("pprofPort", defaultPortPprof, "port for pprof")
@@ -65,7 +68,12 @@ func main() {
 	log.Info().Str("version", Version).
 		Str("buildHash", BuildHash).
 		Str("buildDate", BuildDate).
+		Int("GOMAXPROCS", runtime.GOMAXPROCS(-1)).
 		Msg(appName)
+
+	if *buildInfo {
+		logBuildInfo()
+	}
 
 	h, err := mock.NewHandler(*configPath, *accessLog)
 	if err != nil {
@@ -105,4 +113,17 @@ func stopServer(ctx context.Context, server *http.Server) {
 	}
 
 	log.Debug().Str("addr", server.Addr).Msg("server stopped")
+}
+
+func logBuildInfo() {
+	info, ok := debug.ReadBuildInfo()
+	if !ok {
+		log.Warn().Msg("failed to read build info")
+
+		return
+	}
+
+	log.Info().
+		Any("info", info).
+		Msg("build")
 }
