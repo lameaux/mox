@@ -7,6 +7,7 @@ import (
 )
 
 func Echo(httpWriter http.ResponseWriter, httpReq *http.Request) {
+	// TODO: from request body and base64
 	body := httpReq.URL.Query().Get("body")
 	if body == "" {
 		SendError(httpWriter, http.StatusBadRequest, errInvalidRequest)

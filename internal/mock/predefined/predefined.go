@@ -9,9 +9,16 @@ import (
 
 //nolint:gochecknoglobals
 var mapping = map[string]http.HandlerFunc{
+	"/mox":            handler.Nop,
 	"/mox/echo":       handler.Echo,
 	"/mox/proxy/http": handler.HTTPProxy,
 	"/mox/uuid":       handler.UUIDString,
+	"/mox/headers":    handler.Nop,
+	"/mox/cookies":    handler.Nop,
+	"/mox/ip":         handler.Nop,
+	"/mox/redirect":   handler.Nop,
+	"/mox/image":      handler.Nop,
+	"/mox/random":     handler.Nop,
 }
 
 type middlewareFunc func(http.ResponseWriter, *http.Request) error
