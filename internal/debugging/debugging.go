@@ -1,10 +1,11 @@
-package pprof
+package debugging
 
 import (
 	"errors"
+	_ "expvar" // exposes /debug/vars
 	"fmt"
 	"net/http"
-	_ "net/http/pprof" //nolint:gosec // Import for pprof, only enabled via CLI flag
+	_ "net/http/pprof" //nolint:gosec
 	"time"
 
 	"github.com/rs/zerolog/log"
@@ -28,7 +29,7 @@ func StartServer(port int) *http.Server {
 		}
 	}()
 
-	log.Debug().Int("port", port).Msg("pprof server started")
+	log.Debug().Int("port", port).Msg("debugging server started")
 
 	return server
 }
